@@ -12,7 +12,8 @@ import {
     ListTree,
     Download,
     CheckCircle2,
-    CircleDashed
+    CircleDashed,
+    Search
 } from 'lucide-react'
 import CategoryModal from '@/components/modals/CategoryModal'
 import { useCategories } from '@/contexts/CategoryContext'
@@ -29,7 +30,10 @@ export function SpecList({ projectId, onCreateNew, onEdit }: SpecListProps) {
     const [error, setError] = useState<string | null>(null)
     const [viewMode, setViewMode] = useState<'hierarchical' | 'table'>('table')
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
-    const { largeCategories, mediumCategories, updateCategories } = useCategories()
+    const [searchTerm, setSearchTerm] = useState('')
+    const [selectedLarge, setSelectedLarge] = useState<string>('all')
+    const [selectedMedium, setSelectedMedium] = useState<string>('all')
+    const { largeCategories, mediumCategories, updateCategories: syncCategories } = useCategories()
 
     const loadSpecs = async () => {
         try {
@@ -97,16 +101,31 @@ export function SpecList({ projectId, onCreateNew, onEdit }: SpecListProps) {
         return { specCode, large, medium, small, description, scope: scope as DevScope, importance, notes };
     };
 
+    const filteredSpecs = useMemo(() => {
+        return specs.filter(spec => {
+            const { large, medium, description, specCode } = parseSpec(spec);
+            const matchesSearch =
+                spec.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (specCode || '').toLowerCase().includes(searchTerm.toLowerCase());
+
+            const matchesLarge = selectedLarge === 'all' || large === selectedLarge;
+            const matchesMedium = selectedMedium === 'all' || medium === selectedMedium;
+
+            return matchesSearch && matchesLarge && matchesMedium;
+        });
+    }, [specs, searchTerm, selectedLarge, selectedMedium]);
+
     const groupedSpecs = useMemo(() => {
         const groups: any = {}
-        specs.forEach(spec => {
+        filteredSpecs.forEach(spec => {
             const { large, medium } = parseSpec(spec);
             if (!groups[large]) groups[large] = {}
             if (!groups[large][medium]) groups[large][medium] = []
             groups[large][medium].push(spec)
         })
         return groups
-    }, [specs])
+    }, [filteredSpecs])
 
     const handleExportCSV = () => {
         if (specs.length === 0) return;
@@ -182,7 +201,7 @@ export function SpecList({ projectId, onCreateNew, onEdit }: SpecListProps) {
                             onClick={() => setViewMode('table')}
                             className={`p-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all ${viewMode === 'table' ? 'bg-white shadow-md text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
                         >
-                            <ListTree className="w-4 h-4" />
+                            <LayoutGrid className="w-4 h-4" />
                             <span>테이블형</span>
                         </button>
                         <button
@@ -220,8 +239,59 @@ export function SpecList({ projectId, onCreateNew, onEdit }: SpecListProps) {
                 </div>
             </div>
 
+            {/* Filters Area */}
+            <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm mb-6 flex flex-wrap items-center gap-4">
+                <div className="flex-1 min-w-[300px] relative">
+                    <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                        type="text"
+                        placeholder="기능명, 설명, ID 검색..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-11 pr-4 py-2 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-blue-500 transition-all font-medium text-sm outline-none"
+                    />
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <div className="relative">
+                        <select
+                            value={selectedLarge}
+                            onChange={(e) => {
+                                setSelectedLarge(e.target.value);
+                                setSelectedMedium('all');
+                            }}
+                            className="px-4 py-2 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-blue-500 transition-all font-black text-[11px] text-gray-600 outline-none cursor-pointer appearance-none min-w-[140px] pr-8"
+                        >
+                            <option value="all">📁 대분류 전체</option>
+                            {largeCategories.map(cat => (
+                                <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                        </select>
+                        <ChevronRight className="w-3 h-3 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 rotate-90 pointer-events-none" />
+                    </div>
+
+                    <div className="relative">
+                        <select
+                            value={selectedMedium}
+                            onChange={(e) => setSelectedMedium(e.target.value)}
+                            className="px-4 py-2 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-blue-500 transition-all font-black text-[11px] text-gray-600 outline-none cursor-pointer appearance-none min-w-[140px] pr-8"
+                        >
+                            <option value="all">📂 중분류 전체</option>
+                            {(selectedLarge !== 'all' ? (mediumCategories[selectedLarge] || []) : Object.values(mediumCategories).flat()).map((cat, idx) => (
+                                <option key={`${cat}-${idx}`} value={cat}>{cat}</option>
+                            ))}
+                        </select>
+                        <ChevronRight className="w-3 h-3 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 rotate-90 pointer-events-none" />
+                    </div>
+                </div>
+
+                <div className="text-[10px] font-black text-gray-300 uppercase tracking-widest ml-auto">
+                    Total {filteredSpecs.length} Results
+                </div>
+            </div>
+
             {specs.length === 0 ? (
-                <div className="text-center p-24 bg-white rounded-[40px] border-4 border-dashed border-gray-50 flex flex-col items-center">
+                <div className="text-center p-24 bg-white rounded-lg border-4 border-dashed border-gray-50 flex flex-col items-center">
                     <div className="bg-blue-50 w-24 h-24 rounded-full flex items-center justify-center mb-8 shadow-inner">
                         <FileText className="w-12 h-12 text-blue-200" />
                     </div>
@@ -235,42 +305,42 @@ export function SpecList({ projectId, onCreateNew, onEdit }: SpecListProps) {
                     </button>
                 </div>
             ) : viewMode === 'table' ? (
-                <div className="bg-white rounded-[32px] border border-gray-200 shadow-2xl shadow-gray-100 overflow-hidden">
+                <div className="bg-white rounded-lg border border-gray-200 shadow-2xl shadow-gray-100 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50/80 border-b border-gray-100">
-                                    <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">ID</th>
-                                    <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">분류</th>
-                                    <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">기능명/설명</th>
-                                    <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">상태</th>
-                                    <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">개발순차</th>
-                                    <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">중요도</th>
-                                    <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">비고</th>
-                                    <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest text-right">관리</th>
+                                    <th className="px-6 py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest">ID</th>
+                                    <th className="px-6 py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest">분류</th>
+                                    <th className="px-6 py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest">기능명/설명</th>
+                                    <th className="px-6 py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest">상태</th>
+                                    <th className="px-6 py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest">개발순차</th>
+                                    <th className="px-6 py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest">중요도</th>
+                                    <th className="px-6 py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest">비고</th>
+                                    <th className="px-6 py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest text-right">관리</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {specs.map((spec) => {
+                                {filteredSpecs.map((spec) => {
                                     const { specCode, large, medium, description, scope, importance, notes } = parseSpec(spec);
                                     return (
-                                        <tr key={spec.id} onClick={() => onEdit(spec)} className="hover:bg-blue-50/40 transition-all cursor-pointer group">
-                                            <td className="px-6 py-6 align-top">
+                                        <tr key={spec.id} onClick={() => onEdit(spec)} className="hover:bg-blue-50/40 transition-all cursor-pointer group border-b border-gray-50 last:border-0">
+                                            <td className="px-6 py-2.5 align-top">
                                                 <span className="font-mono text-[10px] font-black text-gray-400 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">{specCode || '-'}</span>
                                             </td>
-                                            <td className="px-6 py-6 align-top">
+                                            <td className="px-6 py-2.5 align-top">
                                                 <div className="flex flex-col gap-1">
                                                     <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-md w-fit uppercase">{large}</span>
                                                     <span className="text-xs font-bold text-gray-800 line-clamp-1">{medium}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-6 align-top max-w-md">
+                                            <td className="px-6 py-2.5 align-top max-w-md">
                                                 <div className="flex flex-col">
                                                     <span className="text-gray-900 font-extrabold text-sm group-hover:text-blue-700 transition-colors">{spec.title}</span>
                                                     <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">{description || '상세 정보가 없습니다.'}</p>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-6 align-top">
+                                            <td className="px-6 py-2.5 align-top">
                                                 <button
                                                     onClick={(e) => handleStatusToggle(e, spec)}
                                                     className="flex items-center gap-2 hover:bg-slate-100 p-1.5 -m-1.5 rounded-xl transition-all"
@@ -284,20 +354,20 @@ export function SpecList({ projectId, onCreateNew, onEdit }: SpecListProps) {
                                                     )}
                                                 </button>
                                             </td>
-                                            <td className="px-6 py-6 align-top">
+                                            <td className="px-6 py-2.5 align-top">
                                                 <span className={`px-2.5 py-1 text-[10px] font-black rounded-lg ${scope === '1차' ? 'bg-indigo-100 text-indigo-700' : 'bg-purple-100 text-purple-700'
                                                     }`}>
                                                     {scope}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-6 align-top">
+                                            <td className="px-6 py-2.5 align-top">
                                                 <span className={`text-[11px] font-black ${importance === '상' ? 'text-red-600' : 'text-orange-500'
                                                     }`}>{importance || '-'}</span>
                                             </td>
-                                            <td className="px-6 py-6 align-top">
+                                            <td className="px-6 py-2.5 align-top">
                                                 <span className="text-[11px] text-gray-500 font-medium line-clamp-1">{notes || '-'}</span>
                                             </td>
-                                            <td className="px-6 py-6 text-right">
+                                            <td className="px-6 py-2.5 text-right">
                                                 <button className="text-gray-300 group-hover:text-blue-600 transition-all transform group-hover:translate-x-1">
                                                     <ChevronRight className="w-5 h-5" />
                                                 </button>
@@ -321,7 +391,7 @@ export function SpecList({ projectId, onCreateNew, onEdit }: SpecListProps) {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                 {Object.entries(mediums).map(([mediumCat, items]: [string, any]) => (
-                                    <div key={mediumCat} className="bg-white/60 backdrop-blur-sm rounded-[32px] border border-gray-100 shadow-sm p-8 hover:shadow-xl hover:bg-white transition-all">
+                                    <div key={mediumCat} className="bg-white/60 backdrop-blur-sm rounded-lg border border-gray-100 shadow-sm p-8 hover:shadow-xl hover:bg-white transition-all">
                                         <div className="flex items-center justify-between mb-8">
                                             <h4 className="font-black text-gray-800 text-lg flex items-center gap-3">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
@@ -345,8 +415,8 @@ export function SpecList({ projectId, onCreateNew, onEdit }: SpecListProps) {
                                                                 <span className="text-sm font-extrabold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">{item.title}</span>
                                                                 <div className="flex items-center gap-2 ml-auto">
                                                                     <div className={`w-2 h-2 rounded-full ${item.status === 'done' ? 'bg-emerald-500' :
-                                                                            item.status === 'in_progress' ? 'bg-blue-500' :
-                                                                                'bg-gray-300'
+                                                                        item.status === 'in_progress' ? 'bg-blue-500' :
+                                                                            'bg-gray-300'
                                                                         }`}></div>
                                                                     {importance === '상' && <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>}
                                                                 </div>
@@ -375,7 +445,7 @@ export function SpecList({ projectId, onCreateNew, onEdit }: SpecListProps) {
                     onClose={() => setIsCategoryModalOpen(false)}
                     initialLargeCategories={largeCategories}
                     initialMediumCategories={mediumCategories}
-                    onSave={updateCategories}
+                    onSave={syncCategories}
                 />
             )}
         </div>

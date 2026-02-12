@@ -70,7 +70,7 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
     }
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
             <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-xl font-bold text-slate-800">요구사항 정의 (Traceability)</h2>
@@ -120,8 +120,8 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${req.priority === 'must' ? 'bg-red-100 text-red-700' :
-                                            req.priority === 'should' ? 'bg-orange-100 text-orange-700' :
-                                                'bg-slate-100 text-slate-600'
+                                        req.priority === 'should' ? 'bg-orange-100 text-orange-700' :
+                                            'bg-slate-100 text-slate-600'
                                         }`}>
                                         {req.priority}
                                     </span>
