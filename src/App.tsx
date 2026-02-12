@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { useState } from 'react'
 import { SpecList } from '@/components/tables/SpecList'
 import { SpecEditor } from '@/components/forms/SpecEditor'
@@ -5,11 +6,11 @@ import { RequirementTable } from '@/components/tables/RequirementTable'
 import { FunctionalSpec } from '@/types'
 import {
     LayoutDashboard,
-    FileText,
     Settings,
     LogOut,
     ChevronLeft,
-    ClipboardList
+    ClipboardList,
+    User
 } from 'lucide-react'
 
 function App() {
@@ -38,56 +39,53 @@ function App() {
     }
 
     return (
-        <div className="flex min-h-screen bg-slate-50">
+        <div className="flex min-h-screen bg-background font-sans antialiased text-foreground">
             {/* Sidebar */}
-            <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col h-screen sticky top-0">
-                <div className="p-6">
-                    <div className="flex items-center gap-3 px-2">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+            <aside className="w-64 bg-white border-r border-border hidden md:flex flex-col h-screen sticky top-0 shadow-sm z-50">
+                <div className="p-8 border-b border-border">
+                    <div className="flex items-center gap-3 px-1">
+                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-lg shadow-blue-600/20">
                             J
                         </div>
-                        <span className="font-bold text-slate-800 text-lg tracking-tight">Jeisys B2B</span>
+                        <span className="font-extrabold text-lg tracking-tight text-slate-900">Jeisys B2B</span>
                     </div>
                 </div>
 
-                <nav className="flex-1 px-4 space-y-1">
+                <nav className="flex-1 p-4 space-y-2">
+                    <div className="px-4 py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em]">
+                        업무 대시보드
+                    </div>
                     <button
                         onClick={() => setView('list')}
-                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group ${view === 'list' && !selectedSpec ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 ${view === 'list' && !selectedSpec ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
                     >
-                        <LayoutDashboard className="w-5 h-5 group-hover:text-blue-600" />
-                        <span className="font-medium">대시보드</span>
+                        <LayoutDashboard className="w-5 h-5" />
+                        <span>기능정의서</span>
                     </button>
                     <button
                         onClick={() => {
                             setView('requirements')
                             setSelectedSpec(undefined)
                         }}
-                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group ${view === 'requirements' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 ${view === 'requirements' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
                     >
-                        <ClipboardList className="w-5 h-5 group-hover:text-blue-600" />
-                        <span className="font-medium">요구사항정의서</span>
+                        <ClipboardList className="w-5 h-5" />
+                        <span>요구사항추적</span>
                     </button>
-                    <button
-                        onClick={() => {
-                            setView('list')
-                            setSelectedSpec(undefined)
-                        }}
-                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group ${view === 'list' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}
-                    >
-                        <FileText className="w-5 h-5" />
-                        <span className="font-medium">기능정의서</span>
-                    </button>
-                    <button className="w-full flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors group">
-                        <Settings className="w-5 h-5 group-hover:text-blue-600" />
-                        <span className="font-medium">설정</span>
+
+                    <div className="pt-8 px-4 py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em]">
+                        Admin 및 설정
+                    </div>
+                    <button className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-all duration-200">
+                        <Settings className="w-5 h-5" />
+                        <span>시스템 설정</span>
                     </button>
                 </nav>
 
-                <div className="p-4 border-t border-slate-100">
-                    <button className="flex items-center gap-3 px-3 py-2 w-full text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all group">
+                <div className="p-6 border-t border-border bg-slate-50/50">
+                    <button className="flex items-center gap-3 px-4 py-3 w-full text-sm font-bold text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200">
                         <LogOut className="w-5 h-5" />
-                        <span className="font-medium">로그아웃</span>
+                        <span>로그아웃</span>
                     </button>
                 </div>
             </aside>
@@ -95,30 +93,36 @@ function App() {
             {/* Main Content */}
             <main className="flex-1 flex flex-col min-h-screen">
                 {/* Header */}
-                <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
-                    <div className="flex items-center gap-4">
-                        <button className="md:hidden p-2 text-slate-600">
+                <header className="h-16 bg-white/90 backdrop-blur-md border-b border-border flex items-center justify-between px-8 sticky top-0 z-40 shadow-sm">
+                    <div className="flex items-center gap-5">
+                        <button className="md:hidden p-2 text-muted-foreground hover:bg-secondary rounded-md">
                             <ChevronLeft className="w-5 h-5" />
                         </button>
-                        <h1 className="text-xl font-bold text-slate-800">
-                            {view === 'editor' ? (selectedSpec ? '기능 수정' : '기능 작성') :
-                                view === 'requirements' ? '요구사항 관리' : '기능관리 시스템'}
-                        </h1>
+                        <div className="flex items-center gap-3">
+                            <span className="text-slate-400 text-xs font-black uppercase tracking-widest">Project</span>
+                            <span className="text-slate-300">/</span>
+                            <h1 className="text-sm font-black text-slate-900 tracking-tight uppercase">
+                                {view === 'editor' ? (selectedSpec ? '기능 편집' : '신규기능 정의') :
+                                    view === 'requirements' ? '요구사항 추적' : '기능 목록'}
+                            </h1>
+                        </div>
                     </div>
                     <div className="flex items-center gap-4">
-                        <div className="text-right hidden sm:block">
-                            <p className="text-sm font-bold text-slate-700">관리자님</p>
-                            <p className="text-xs text-slate-500">Project Manager</p>
-                        </div>
-                        <div className="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden">
-                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="avatar" />
+                        <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-lg transition-all cursor-pointer border border-border/50">
+                            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-sm">
+                                <User className="w-4 h-4" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-xs font-black text-slate-800 leading-none">Jeisys Admin</span>
+                                <span className="text-[10px] font-bold text-slate-400 mt-1">PM / 관리자</span>
+                            </div>
                         </div>
                     </div>
                 </header>
 
                 {/* Content Area */}
-                <div className="flex-1 overflow-y-auto bg-slate-50 p-8">
-                    <div className="max-w-7xl mx-auto h-full">
+                <div className="flex-1 overflow-y-auto bg-[#f8f9fb] p-8">
+                    <div className="max-w-7xl mx-auto h-full space-y-6">
                         {view === 'list' && (
                             <SpecList
                                 projectId={currentProjectId}
@@ -127,10 +131,18 @@ function App() {
                             />
                         )}
                         {view === 'requirements' && (
-                            <RequirementTable projectId={currentProjectId} />
+                            <div className="space-y-6">
+                                <div className="space-y-1">
+                                    <h2 className="text-3xl font-black tracking-tight text-slate-900">요구사항 추적 테이블</h2>
+                                    <p className="text-base text-slate-500 font-medium">비즈니스 요구사항과 기능 상세 간의 연결고리를 관리합니다.</p>
+                                </div>
+                                <div className="bg-white rounded-xl shadow-sm border border-border p-1">
+                                    <RequirementTable projectId={currentProjectId} />
+                                </div>
+                            </div>
                         )}
                         {view === 'editor' && (
-                            <div className="h-[calc(100vh-10rem)]">
+                            <div className="h-full min-h-[800px]">
                                 <SpecEditor
                                     projectId={currentProjectId}
                                     initialData={selectedSpec}
