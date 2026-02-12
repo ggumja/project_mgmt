@@ -101,11 +101,6 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                     </button>
                 </form>
 
-                <div className="text-center pt-4 border-t border-slate-100">
-                    <p className="text-xs text-slate-400">
-                        Default: <span className="font-mono bg-slate-100 px-1 py-0.5 rounded text-slate-600">admin</span> / <span className="font-mono bg-slate-100 px-1 py-0.5 rounded text-slate-600">password123</span>
-                    </p>
-                </div>
             </div>
         </div>
     );
