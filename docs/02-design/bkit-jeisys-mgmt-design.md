@@ -27,12 +27,18 @@ interface FunctionalSpec {
   id: string; // UUID
   project_id: string; // FK
   title: string;
-  category: 'product' | 'order' | 'member' | 'B2B_special' | 'settlement';
+  category: string; // "Large|Medium" 형태의 구분자 기반 또는 개별 필드
+  large_category?: string; // 대분류 (예: 공통 기능)
+  medium_category?: string; // 중분류 (예: 회원 관리)
   priority: 'critical' | 'high' | 'medium' | 'low';
   status: 'draft' | 'review' | 'approved';
   version: string;
   content: string; // Markdown content
 }
+
+### 계층형 분류 처리 로직
+- **Data Side**: `category` 필드에 `대분류|중분류` 형태로 저장하거나, 별도의 컬럼을 사용하여 계층 구조 유지.
+- **UI Side**: `lodash.groupBy` 또는 유사한 로직을 사용하여 `대분류 > 중분류 > 소분류(개별 Spec)` 트리 구조로 렌더링.
 
 // 2. Requirements (요구사항정의서)
 interface Requirement {

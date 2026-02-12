@@ -1,6 +1,7 @@
 export type Priority = 'critical' | 'high' | 'medium' | 'low';
 export type Status = 'draft' | 'review' | 'approved';
 export type Category = 'product' | 'order' | 'member' | 'B2B_special' | 'settlement';
+export type DevScope = '1차' | '2차' | '추가논의';
 
 export interface Project {
     id: string;
@@ -14,11 +15,18 @@ export interface Project {
 export interface FunctionalSpec {
     id: string;
     project_id: string;
+    spec_code?: string; // 추가: 기능 ID (예: FM-0001)
     title: string;
     description?: string;
-    category: Category;
+    category: string;
+    large_category?: string;
+    medium_category?: string;
+    small_category?: string;
+    importance?: string; // 추가: 중요도
+    notes?: string;      // 추가: 비고
     priority: Priority;
     status: Status;
+    dev_scope?: DevScope;
     version: string;
     content?: string;
     created_at: string;

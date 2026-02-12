@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 
 function App() {
-    const [currentProjectId] = useState('demo-project-id')
+    const [currentProjectId] = useState('00000000-0000-0000-0000-000000000002')
     const [view, setView] = useState<'list' | 'editor' | 'requirements'>('list')
     const [selectedSpec, setSelectedSpec] = useState<FunctionalSpec | undefined>(undefined)
 

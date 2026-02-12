@@ -18,8 +18,20 @@
             "phase": "DO",
             "start_date": "2026-02-11T12:12:42+09:00",
             "status": "COMPLETED",
-            "feature": "요구사항 관리 및 기능-요구사항 매핑 기능 구현"
+            "feature": "마이그레이션 및 계층형 UI 구현 완료"
+        },
+        {
+            "phase": "DO",
+            "start_date": "2026-02-11T13:17:46+09:00",
+            "status": "COMPLETED",
+            "feature": "기능정의서 테이블 뷰(Table View) 모드 추가 및 정밀 관리 UI 구현"
+        },
+        {
+            "phase": "DO",
+            "start_date": "2026-02-11T14:45:00+09:00",
+            "status": "COMPLETED",
+            "feature": "상세 설명(Description) 필드 추출 및 모든 뷰(Table/Hierarchical/Card) 적용 완료"
         }
     ],
-    "last_updated": "2026-02-11T12:35:00+09:00"
+    "last_updated": "2026-02-11T14:45:00+09:00"
 }

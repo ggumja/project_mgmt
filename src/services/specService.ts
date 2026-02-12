@@ -54,5 +54,20 @@ export const specService = {
         }
 
         return data as FunctionalSpec
-    }
+    },
+
+    /**
+     * 기능정의서를 삭제합니다.
+     */
+    async deleteSpec(id: string): Promise<void> {
+        const { error } = await supabase
+            .from('functional_specs')
+            .delete()
+            .eq('id', id)
+
+        if (error) {
+            console.error('Error deleting spec:', error)
+            throw error
+        }
+    },
 }

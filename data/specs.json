@@ -1,0 +1,635 @@
+[
+    {
+        "spec_code": "FM-0001",
+        "large_category": "프론트엔드",
+        "medium_category": "회원가입 및 인증",
+        "title": "회원가입",
+        "description": "약관동의,기본회원항목, 사업자정보(세금계산서 이메일, 사업자번호, 사업자등록증), 보유장비정보 - 장비종류(구매장비, 데모장비, 구매예정장비), 장비사진, 모델명",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "FM-0002",
+        "large_category": "프론트엔드",
+        "medium_category": "회원가입 및 인증",
+        "title": "로그인",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "FM-0003",
+        "large_category": "프론트엔드",
+        "medium_category": "마이페이지",
+        "title": "주문/배송 관리",
+        "description": "주문내역, 배송조회(일부배송내역도 가능해야 함)",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "FM-0004",
+        "large_category": "프론트엔드",
+        "medium_category": "마이페이지",
+        "title": "반품/교환 신청",
+        "description": "신청 및 신청내역관리만, 교환/반품 유효기간 체크해야, 유/무상 제품 체크",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FM-0005",
+        "large_category": "프론트엔드",
+        "medium_category": "마이페이지",
+        "title": "정기주문 관리",
+        "description": "정기주문(배송주기, 갯수, 배송횟수, 마지막배송일), 상태(진행중, 일시중지, 취소), 정기배송상세",
+        "dev_scope": "2차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FM-0006",
+        "large_category": "프론트엔드",
+        "medium_category": "마이페이지",
+        "title": "보유장비",
+        "description": "장비사진, 모델명, 시리얼, 설치일, 워런티, 구매처기능: 호환소모품보기",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FM-0007",
+        "large_category": "프론트엔드",
+        "medium_category": "마이페이지",
+        "title": "포인트(포인트)내역",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FM-0008",
+        "large_category": "프론트엔드",
+        "medium_category": "마이페이지",
+        "title": "쿠폰내역",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FM-0009",
+        "large_category": "프론트엔드",
+        "medium_category": "마이페이지",
+        "title": "크레딧내역",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FM-0010",
+        "large_category": "프론트엔드",
+        "medium_category": "마이페이지",
+        "title": "정보수정",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FM-0011",
+        "large_category": "프론트엔드",
+        "medium_category": "마이페이지",
+        "title": "로그아웃",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FH-0001",
+        "large_category": "프론트엔드",
+        "medium_category": "메인페이지",
+        "title": "GMB",
+        "description": "GMB(상품, 제품소개, 마케팅자료)Sub(검색창, 장바구니, 마이페이지, 로그아웃)",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "FH-0002",
+        "large_category": "프론트엔드",
+        "medium_category": "메인페이지",
+        "title": "구성요소",
+        "description": "최근구매상품, 제이시스소식, 쇼츠영상(인스타/유튜브), 하단배너, 하단푸터(소셜버튼), 패밀리사이트",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FH-0003",
+        "large_category": "프론트엔드",
+        "medium_category": "메인페이지",
+        "title": "장비/소모품 요약 노출",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FH-0004",
+        "large_category": "프론트엔드",
+        "medium_category": "기능요소",
+        "title": "내정보요약모달",
+        "description": "이달주문합계, 포인트, 쿠폰, 마이페이지바로가기",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FH-0005",
+        "large_category": "프론트엔드",
+        "medium_category": "기능요소",
+        "title": "배너",
+        "description": "메인배너, 사이드배너, 팝업배너, 하단배너(데모신청, 교육신청)",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FH-0006",
+        "large_category": "프론트엔드",
+        "medium_category": "기능요소",
+        "title": "플로팅 버튼",
+        "description": "카카오채널, 고객센터, 최상단이동",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FP-0001",
+        "large_category": "프론트엔드",
+        "medium_category": "상품",
+        "title": "상품리스트",
+        "description": "대분류, 중분류",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "FP-0002",
+        "large_category": "프론트엔드",
+        "medium_category": "상품",
+        "title": "상품상세",
+        "description": "상품이미지, 제목, 가격, 수량, 다량주문할인, 총합계, 장바구니담기, 바로구매, 반품/교환안내, 연관상품브로셔, 매뉴얼",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "FP-0003",
+        "large_category": "프론트엔드",
+        "medium_category": "상품",
+        "title": "장바구니",
+        "description": "상품금액, 배송비, 총결제금액, 견적서다운로드, 무료배송조건 필요",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "FP-0004",
+        "large_category": "프론트엔드",
+        "medium_category": "상품",
+        "title": "예약주문",
+        "description": "상품이 품절 상태일 때 결제를 먼저 할 수 있어야 함. 상세페이지내 안내로 처리",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FP-0005",
+        "large_category": "프론트엔드",
+        "medium_category": "상품",
+        "title": "결제",
+        "description": "배송지관리, 카드관리(등록/삭제), 무통장입금, 분할결제(전체 금액을 여러카드 혹은 결제도구로 나눠서 결제완료)",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "FC-0001",
+        "large_category": "프론트엔드",
+        "medium_category": "커뮤니케이션",
+        "title": "1:1 문의사항",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FC-0002",
+        "large_category": "프론트엔드",
+        "medium_category": "커뮤니케이션",
+        "title": "FAQ",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FC-0003",
+        "large_category": "프론트엔드",
+        "medium_category": "커뮤니케이션",
+        "title": "고객설문",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FC-0004",
+        "large_category": "프론트엔드",
+        "medium_category": "커뮤니케이션",
+        "title": "매뉴얼",
+        "description": "장비, 소모품 매뉴얼 PDF",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FC-0005",
+        "large_category": "프론트엔드",
+        "medium_category": "커뮤니케이션",
+        "title": "교육캘린더",
+        "description": "캘린더, 캘린더항목(교육일시, 장소, 신청현황/잔여석, 교육내용), 교육신청하기",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FC-0006",
+        "large_category": "프론트엔드",
+        "medium_category": "커뮤니케이션",
+        "title": "장비데모신청",
+        "description": "병원정보(병원명, 연락처, 데모 희망 장비, 데모 희망 일정, 데모 요청 사항) - 로그인 상태는 기본정보 불러오기",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FC-0007",
+        "large_category": "프론트엔드",
+        "medium_category": "커뮤니케이션",
+        "title": "제이시스미디어",
+        "description": "제이시스뉴스",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "FC-0008",
+        "large_category": "프론트엔드",
+        "medium_category": "커뮤니케이션",
+        "title": "제품소개",
+        "description": "보유제품소개 - DB로 상품정보 관리(브로셔, 매뉴얼 등)기능: 데모신청",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AD-0001",
+        "large_category": "어드민",
+        "medium_category": "대시보드",
+        "title": "매출 및 현황",
+        "description": "매출추이(연별, 월별) 수량/매출액 통계",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "AO-0001",
+        "large_category": "어드민",
+        "medium_category": "주문관리",
+        "title": "오늘발송리스트",
+        "description": "오늘발송 대상리스트(일반배송, 정기배송, 예약배송 등)택배사연동",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AO-0002",
+        "large_category": "어드민",
+        "medium_category": "주문관리",
+        "title": "발송대상상세",
+        "description": "주문번호, 주문정보, 고객정보, 주문상품목록 및 금액, 배송지 정보, 결제정보기능: 일부배송처리(종류, 수량)",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "AO-0003",
+        "large_category": "어드민",
+        "medium_category": "주문관리",
+        "title": "정기배송",
+        "description": "정기배송 상품의 별도 목록 및 주기 관리",
+        "dev_scope": "2차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AO-0004",
+        "large_category": "어드민",
+        "medium_category": "주문관리",
+        "title": "미발송리스트",
+        "description": "제품 부족으로 인한 미발송리스트 목록(주문번호, 고객정보, 상품정보, 배송주기, 다음배송일), 예약주문 포함",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AO-0005",
+        "large_category": "어드민",
+        "medium_category": "주문관리",
+        "title": "무통장입금 처리",
+        "description": "PG사로부터 무통장입금 신호받아서 처리 - 기능확인필요",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AO-0006",
+        "large_category": "어드민",
+        "medium_category": "주문관리",
+        "title": "전체주문조회",
+        "description": "전체 주문 내역",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "AO-0007",
+        "large_category": "어드민",
+        "medium_category": "주문관리",
+        "title": "교환/반품 리스트",
+        "description": "교환/반품, 유/무상, 반품유효기한",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AP-0001",
+        "large_category": "어드민",
+        "medium_category": "상품관리",
+        "title": "상품리스트",
+        "description": "상품 일괄 노출설정",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "AP-0002",
+        "large_category": "어드민",
+        "medium_category": "상품관리",
+        "title": "카테고리관리",
+        "description": "대/중/소, 순서설정, 노출설정",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "AP-0003",
+        "large_category": "어드민",
+        "medium_category": "상품관리",
+        "title": "상품등록/수정",
+        "description": "상품기본정보(대표이미지, 추가이미지, 상품명, 카테고리, 상품코드(SAP연동검색), 제조사, 판매가격, 판매상태, 상품설명(에디터), 간략설정명기주",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "AK-0001",
+        "large_category": "어드민",
+        "medium_category": "마케팅관리",
+        "title": "마케팅 대시보드",
+        "description": "발송횟수(이메일, 문자/알림톡), 문자/알림톡 잔여, 발송통계 요약(이메일, 문자/알림톡)",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AK-0002",
+        "large_category": "어드민",
+        "medium_category": "마케팅관리",
+        "title": "이메일발송",
+        "description": "고객조회조건, 발송통계",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AK-0003",
+        "large_category": "어드민",
+        "medium_category": "마케팅관리",
+        "title": "문자/알림톡 발송",
+        "description": "고객조회조건, 발송통계",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AK-0004",
+        "large_category": "어드민",
+        "medium_category": "마케팅관리",
+        "title": "문자/알림톡 충전",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AK-0005",
+        "large_category": "어드민",
+        "medium_category": "마케팅관리",
+        "title": "쿠폰관리",
+        "description": "쿠폰발행, 이력관리, 소멸설정/알림",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AK-0006",
+        "large_category": "어드민",
+        "medium_category": "마케팅관리",
+        "title": "크레딧관리",
+        "description": "크레딧 정책준비중",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AB-0001",
+        "large_category": "어드민",
+        "medium_category": "배너관리",
+        "title": "배너목록",
+        "description": "메인, 푸터, 팝업, 사이드 등",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AB-0002",
+        "large_category": "어드민",
+        "medium_category": "배너관리",
+        "title": "노출/클릭 통계",
+        "description": "노출클릭/평균클릭률(CTR), 지면별 성과통계, 개별 광고성과 통계",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AS-0001",
+        "large_category": "어드민",
+        "medium_category": "통계관리",
+        "title": "기간별 매출현황",
+        "description": "연도별/분기별/월별/주별/일별, Summary(총매출, 총주문, 평균주문액, 최고매출건), 매출추이차트, 기간지정에 따른 리스트(년, 분기, 월, 주, 일)",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "AS-0002",
+        "large_category": "어드민",
+        "medium_category": "통계관리",
+        "title": "매출 분석",
+        "description": "고객별 매출순위, 카테고리별 매출현황, 상품별 매출현황, 결제수단별 매출현황, 지역별",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AS-0003",
+        "large_category": "어드민",
+        "medium_category": "통계관리",
+        "title": "상품 분석",
+        "description": "상품요약(전체상품갯수, 중 판매량, 재고부족), 재고부족상품 목록, 카테고리별 판매주이 차트, 베스트셀러(년, 분기, 월, 주, 일)",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AS-0004",
+        "large_category": "어드민",
+        "medium_category": "통계관리",
+        "title": "방문 분석",
+        "description": "방문숫자, 쇼핑몰체류시간, 페이지별 방문횟수, 페이지별체류시간",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AM-0001",
+        "large_category": "어드민",
+        "medium_category": "회원관리",
+        "title": "회원관리",
+        "description": "회원등급, 회원종류(일반, 학회별회원, 신규 우선 도입처, 네트워크별, 대리점 등), 상태관리(승인, 승인대기, 정지 등)회원조회(등급별, 지역별, 보유",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "AM-0002",
+        "large_category": "어드민",
+        "medium_category": "회원관리",
+        "title": "크레딧 관리",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AM-0003",
+        "large_category": "어드민",
+        "medium_category": "회원관리",
+        "title": "적립금 관리(포인트)",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AM-0004",
+        "large_category": "어드민",
+        "medium_category": "회원관리",
+        "title": "SAP 회원정보 검색 매칭",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AF-0001",
+        "large_category": "어드민",
+        "medium_category": "약관관리",
+        "title": "약관관리",
+        "description": "약관 항목 등록/수정",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AF-0002",
+        "large_category": "어드민",
+        "medium_category": "관리자 계정관리",
+        "title": "관리자 계정관리",
+        "description": "관리자 리스트, 권한등급, 접근권한, 마지막로그인",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "AF-0003",
+        "large_category": "어드민",
+        "medium_category": "관리자 기능",
+        "title": "관리자 대리주문",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AF-0004",
+        "large_category": "어드민",
+        "medium_category": "관리자 기능",
+        "title": "관리자 대리 장바구니 담기/알림",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AF-0005",
+        "large_category": "어드민",
+        "medium_category": "관리자 기능",
+        "title": "관리자 대리 고객정보수정",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AF-0006",
+        "large_category": "어드민",
+        "medium_category": "판매영업점관리",
+        "title": "판매영업점관리",
+        "description": "기획필요",
+        "dev_scope": "2차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AF-0007",
+        "large_category": "어드민",
+        "medium_category": "판매영업점관리",
+        "title": "판매영업점 수수료",
+        "description": "",
+        "dev_scope": "2차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "AE-0001",
+        "large_category": "SAP 연동",
+        "medium_category": "주문등록",
+        "title": "SAP 주문 동기화",
+        "description": "1) 주문완료시 : SAP 판매오더 등록 2) 택배 배송 완료시 : SAP 납품처리 등록 3) 주문처리 완료시 : SAP A/R 발행 등록 / 사이트상에 세금계산서 발행",
+        "dev_scope": "2차",
+        "importance": "하",
+        "notes": "상세미팅필요"
+    },
+    {
+        "spec_code": "AE-0002",
+        "large_category": "SAP 연동",
+        "medium_category": "결제",
+        "title": "SAP 결제/정산 연동",
+        "description": "카드 결제 OR 계좌이체시 SAP와 연동되어 자동 입금 매칭 / 수관관리 고도화 1) 카드 결제 : PG사 내역과 연동 (일주일 1회 정산) 2) 계좌이체 : 당시",
+        "dev_scope": "2차",
+        "importance": "하",
+        "notes": "상세미팅필요"
+    },
+    {
+        "spec_code": "AE-0003",
+        "large_category": "SAP 연동",
+        "medium_category": "회원관리",
+        "title": "회원정보매칭",
+        "description": "회원정보매칭",
+        "dev_scope": "2차",
+        "importance": "하",
+        "notes": "상세미팅필요"
+    },
+    {
+        "spec_code": "M-0001",
+        "large_category": "마이그레이션",
+        "medium_category": "회원",
+        "title": "회원 데이터 이관",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "상"
+    },
+    {
+        "spec_code": "M-0002",
+        "large_category": "마이그레이션",
+        "medium_category": "크레딧",
+        "title": "크레딧 데이터 이관",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    },
+    {
+        "spec_code": "M-0003",
+        "large_category": "마이그레이션",
+        "medium_category": "포인트",
+        "title": "포인트 데이터 이관",
+        "description": "",
+        "dev_scope": "1차",
+        "importance": "중"
+    }
+]
