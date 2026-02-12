@@ -27,6 +27,7 @@ export interface FunctionalSpec {
     priority: Priority;
     status: Status;
     dev_scope?: DevScope;
+    sort_order?: number; // Manual ordering field
     version: string;
     content?: string;
     created_at: string;
@@ -47,4 +48,14 @@ export interface Requirement {
     version: string;
     created_at: string;
     updated_at: string;
+}
+
+export interface SpecHistory {
+    id: string;
+    spec_id: string;
+    previous_version: string;
+    new_version: string;
+    changed_at: string;
+    changed_by?: string;
+    change_summary: string;
 }

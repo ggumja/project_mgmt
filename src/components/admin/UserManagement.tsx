@@ -19,7 +19,8 @@ export function UserManagement() {
     const [users, setUsers] = useState<User[]>([]);
     const [logs, setLogs] = useState<UserActivity[]>([]);
     const [view, setView] = useState<'users' | 'logs'>('users');
-    const [showAddModal, setShowAddModal] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [editingUser, setEditingUser] = useState<User | null>(null);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -40,26 +41,56 @@ export function UserManagement() {
         setLogs(userService.getHistory());
     };
 
-    const handleAddUser = (e: React.FormEvent) => {
+    const handleSaveUser = (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            userService.addUser({
-                ...formData,
-                status: 'active'
-            });
-            setShowAddModal(false);
-            setFormData({
-                username: '',
-                name: '',
-                password: '',
-                role: 'viewer',
-                email: '',
-                department: ''
-            });
+            if (editingUser) {
+                // Update existing user
+                userService.updateUser({
+                    ...editingUser,
+                    ...formData,
+                    // Only update password if provided
+                    password: formData.password ? formData.password : editingUser.password,
+                    updated_at: new Date().toISOString()
+                });
+            } else {
+                // Create new user
+                userService.addUser({
+                    ...formData,
+                    status: 'active'
+                });
+            }
+            closeModal();
             loadData();
         } catch (err: any) {
             alert(err.message);
         }
+    };
+
+    const handleEditClick = (user: User) => {
+        setEditingUser(user);
+        setFormData({
+            username: user.username,
+            name: user.name,
+            password: '', // Don't show existing password
+            role: user.role,
+            email: user.email || '',
+            department: user.department || ''
+        });
+        setShowModal(true);
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+        setEditingUser(null);
+        setFormData({
+            username: '',
+            name: '',
+            password: '',
+            role: 'viewer',
+            email: '',
+            department: ''
+        });
     };
 
     const handleDeleteUser = (id: string) => {
@@ -100,7 +131,7 @@ export function UserManagement() {
                 <div className="space-y-4">
                     <div className="flex justify-end">
                         <button
-                            onClick={() => setShowAddModal(true)}
+                            onClick={() => setShowModal(true)}
                             className="h-10 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all text-sm font-bold shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2"
                         >
                             <Plus className="w-4 h-4" />
@@ -135,8 +166,8 @@ export function UserManagement() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                                                    user.role === 'manager' ? 'bg-blue-100 text-blue-800' :
-                                                        'bg-slate-100 text-slate-800'
+                                                user.role === 'manager' ? 'bg-blue-100 text-blue-800' :
+                                                    'bg-slate-100 text-slate-800'
                                                 }`}>
                                                 {user.role}
                                             </span>
@@ -152,12 +183,22 @@ export function UserManagement() {
                                             {user.last_login ? new Date(user.last_login).toLocaleString() : '-'}
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={() => handleDeleteUser(user.id)}
-                                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => handleEditClick(user)}
+                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                    title="Edit User"
+                                                >
+                                                    <Edit2 className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteUser(user.id)}
+                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Delete User"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -190,9 +231,9 @@ export function UserManagement() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${log.action === 'LOGIN' ? 'bg-emerald-50 text-emerald-600' :
-                                                log.action === 'LOGOUT' ? 'bg-slate-100 text-slate-500' :
-                                                    log.action === 'delete' ? 'bg-red-50 text-red-600' :
-                                                        'bg-blue-50 text-blue-600'
+                                            log.action === 'LOGOUT' ? 'bg-slate-100 text-slate-500' :
+                                                log.action === 'delete' ? 'bg-red-50 text-red-600' :
+                                                    'bg-blue-50 text-blue-600'
                                             }`}>
                                             {log.action}
                                         </span>
@@ -210,21 +251,23 @@ export function UserManagement() {
                 </div>
             )}
 
-            {/* Add User Modal */}
-            {showAddModal && (
+            {/* User Modal (Add/Edit) */}
+            {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                            <h3 className="font-bold text-lg text-slate-900">Add New User</h3>
+                            <h3 className="font-bold text-lg text-slate-900">
+                                {editingUser ? 'Edit User' : 'Add New User'}
+                            </h3>
                             <button
-                                onClick={() => setShowAddModal(false)}
+                                onClick={closeModal}
                                 className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
                             >
                                 <XCircle className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <form onSubmit={handleAddUser} className="p-6 space-y-4">
+                        <form onSubmit={handleSaveUser} className="p-6 space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-slate-500 uppercase">Username</label>
@@ -233,7 +276,8 @@ export function UserManagement() {
                                         required
                                         value={formData.username}
                                         onChange={e => setFormData({ ...formData, username: e.target.value })}
-                                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none font-bold text-slate-700"
+                                        disabled={!!editingUser} // Make username immutable on edit? Usually safer.
+                                        className={`w-full px-3 py-2 border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none font-bold text-slate-700 ${editingUser ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-slate-50'}`}
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -258,17 +302,21 @@ export function UserManagement() {
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none font-bold text-slate-700"
+                                    placeholder="e.g. John Doe"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-500 uppercase">Password</label>
+                                <label className="text-xs font-bold text-slate-500 uppercase">
+                                    Password {editingUser && <span className="text-slate-400 font-normal lowercase">(Leave blank to keep current)</span>}
+                                </label>
                                 <input
                                     type="password"
-                                    required
+                                    required={!editingUser}
                                     value={formData.password}
                                     onChange={e => setFormData({ ...formData, password: e.target.value })}
                                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none font-bold text-slate-700"
+                                    placeholder={editingUser ? "••••••••" : ""}
                                 />
                             </div>
 
@@ -279,13 +327,14 @@ export function UserManagement() {
                                     value={formData.email}
                                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none font-bold text-slate-700"
+                                    placeholder="user@example.com"
                                 />
                             </div>
 
                             <div className="pt-4 flex justify-end gap-3">
                                 <button
                                     type="button"
-                                    onClick={() => setShowAddModal(false)}
+                                    onClick={closeModal}
                                     className="px-4 py-2 text-slate-500 font-bold hover:bg-slate-100 rounded-lg transition-colors"
                                 >
                                     Cancel
@@ -294,7 +343,7 @@ export function UserManagement() {
                                     type="submit"
                                     className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-95 transition-all"
                                 >
-                                    Create User
+                                    {editingUser ? 'Update User' : 'Create User'}
                                 </button>
                             </div>
                         </form>

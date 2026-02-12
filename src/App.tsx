@@ -97,19 +97,23 @@ function App() {
                         <span>요구사항추적</span>
                     </button>
 
-                    <div className="pt-8 px-4 py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em]">
-                        Admin 및 설정
-                    </div>
-                    <button
-                        onClick={() => {
-                            setView('admin')
-                            setSelectedSpec(undefined)
-                        }}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 ${view === 'admin' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
-                    >
-                        <Settings className="w-5 h-5" />
-                        <span>시스템 설정</span>
-                    </button>
+                    {user.role === 'admin' && (
+                        <>
+                            <div className="pt-8 px-4 py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em]">
+                                Admin 및 설정
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setView('admin')
+                                    setSelectedSpec(undefined)
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 ${view === 'admin' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                            >
+                                <Settings className="w-5 h-5" />
+                                <span>시스템 설정</span>
+                            </button>
+                        </>
+                    )}
                 </nav>
 
                 <div className="p-6 border-t border-border bg-slate-50/50">
@@ -185,7 +189,7 @@ function App() {
                                 />
                             </div>
                         )}
-                        {view === 'admin' && (
+                        {view === 'admin' && user?.role === 'admin' && (
                             <UserManagement />
                         )}
                     </div>

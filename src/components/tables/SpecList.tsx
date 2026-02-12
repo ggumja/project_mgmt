@@ -13,15 +13,120 @@ import {
     CheckCircle2,
     CircleDashed,
     Search,
-    MoreHorizontal
+    MoreHorizontal,
+    GripVertical
 } from 'lucide-react'
 import CategoryModal from '@/components/modals/CategoryModal'
 import { useCategories } from '@/contexts/CategoryContext'
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface SpecListProps {
     projectId: string;
     onCreateNew: () => void;
     onEdit: (spec: FunctionalSpec) => void;
+}
+
+interface SortableRowProps {
+    spec: FunctionalSpec;
+    onEdit: (spec: FunctionalSpec) => void;
+    parseSpec: (spec: FunctionalSpec) => any;
+    handleStatusToggle: (e: React.MouseEvent, spec: FunctionalSpec) => void;
+    loadSpecs: () => Promise<void>;
+}
+
+function SortableRow({ spec, onEdit, parseSpec, handleStatusToggle, loadSpecs }: SortableRowProps) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: spec.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 1 : 0,
+        position: isDragging ? 'relative' as const : undefined,
+    };
+
+    const { specCode, large, medium, description, scope, importance } = parseSpec(spec);
+
+    return (
+        <tr
+            ref={setNodeRef}
+            style={style}
+            onClick={() => onEdit(spec)}
+            className={`transition-colors cursor-pointer group ${isDragging ? 'bg-blue-50 shadow-md opacity-80' : 'hover:bg-accent/50'}`}
+        >
+            <td className="px-2 py-4 align-top text-center w-12" onClick={(e) => e.stopPropagation()}>
+                <div
+                    {...attributes}
+                    {...listeners}
+                    className="flex justify-center items-center h-full text-slate-400 hover:text-blue-600 cursor-grab active:cursor-grabbing p-1 rounded hover:bg-slate-100"
+                >
+                    <GripVertical className="w-4 h-4" />
+                </div>
+            </td>
+            <td className="px-4 py-4 align-top font-mono text-xs text-muted-foreground font-semibold">
+                {specCode || '-'}
+            </td>
+            <td className="px-4 py-4 align-top">
+                <div className="flex flex-col gap-0.5">
+                    <span className="text-[11px] font-bold text-blue-600 inline-flex">{large}</span>
+                    <span className="text-xs text-muted-foreground font-medium truncate max-w-[140px]">{medium}</span>
+                </div>
+            </td>
+            <td className="px-4 py-4 align-top">
+                <div className="flex flex-col gap-1">
+                    <span className="font-bold text-foreground group-hover:text-primary transition-colors text-[14px]">{spec.title}</span>
+                    <p className="text-xs text-muted-foreground line-clamp-1 font-medium">{description}</p>
+                </div>
+            </td>
+            <td className="px-4 py-4 align-top text-center">
+                <div
+                    onClick={(e) => handleStatusToggle(e, spec)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary text-xs font-bold"
+                >
+                    {spec.status === 'done' ? (
+                        <><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> <span>완료</span></>
+                    ) : spec.status === 'in_progress' ? (
+                        <><CircleDashed className="w-3.5 h-3.5 text-blue-600 animate-spin" /> <span>진행중</span></>
+                    ) : (
+                        <><CircleDashed className="w-3.5 h-3.5 text-muted-foreground" /> <span>대기</span></>
+                    )}
+                </div>
+            </td>
+            <td className="px-4 py-4 align-top text-center">
+                <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${scope === '1차' ? 'bg-blue-50 text-blue-700' : 'bg-orange-50 text-orange-700'}`}>
+                    {scope}
+                </span>
+            </td>
+            <td className="px-4 py-4 align-top text-center text-xs font-black">
+                {importance === '상' ? <span className="text-destructive">상</span> : importance === '중' ? <span className="text-orange-500">중</span> : <span className="text-muted-foreground">하</span>}
+            </td>
+            <td className="px-4 py-4 text-right align-middle">
+                <MoreHorizontal className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+            </td>
+        </tr>
+    );
 }
 
 export function SpecList({ projectId, onCreateNew, onEdit }: SpecListProps) {
@@ -34,6 +139,13 @@ export function SpecList({ projectId, onCreateNew, onEdit }: SpecListProps) {
     const [selectedLarge, setSelectedLarge] = useState<string>('all')
     const [selectedMedium, setSelectedMedium] = useState<string>('all')
     const { largeCategories, mediumCategories, updateCategories: syncCategories } = useCategories()
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     const loadSpecs = async () => {
         try {
@@ -102,6 +214,10 @@ export function SpecList({ projectId, onCreateNew, onEdit }: SpecListProps) {
     };
 
     const filteredSpecs = useMemo(() => {
+        // When searching or filtering, we don't return drag/drop capability, or we just rely on base list
+        // Drag and drop usually makes sense when seeing the FULL list or a specifically ordered list.
+        // However, to keep it simple, we sort based on the specs state which is already ordered by sort_order.
+
         return specs.filter(spec => {
             const { large, medium, description, specCode } = parseSpec(spec);
             const matchesSearch =
@@ -126,6 +242,41 @@ export function SpecList({ projectId, onCreateNew, onEdit }: SpecListProps) {
         })
         return groups
     }, [filteredSpecs])
+
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (over && active.id !== over.id) {
+            setSpecs((items) => {
+                const oldIndex = items.findIndex((item) => item.id === active.id);
+                const newIndex = items.findIndex((item) => item.id === over.id);
+
+                const newItems = arrayMove(items, oldIndex, newIndex);
+
+                // Update sort_order for all affected items
+                // This is a naive implementation; for production with pagination, it needs more care.
+                // Since this list is relatively small, we update the order of everything or just the moved item + neighbors.
+                // To remain robust, we update the backend with the new order.
+
+                // We'll optimistically update the UI, then sync to server.
+                // Re-assign sort_order based on new index * 10 or similar to allow spacing
+
+                const updates = newItems.map((item, index) => ({
+                    id: item.id,
+                    sort_order: (index + 1) * 10
+                }));
+
+                // Fire and forget update (or show loading)
+                // In a real app we would batch this.
+                specService.updateSpecOrders(updates).catch(err => {
+                    console.error("Failed to reorder", err);
+                    loadSpecs(); // Revert on failure
+                });
+
+                return newItems;
+            });
+        }
+    };
 
     const handleExportCSV = () => {
         if (specs.length === 0) return;
@@ -276,72 +427,47 @@ export function SpecList({ projectId, onCreateNew, onEdit }: SpecListProps) {
             </div>
 
             {viewMode === 'table' ? (
-                <div className="rounded-md border border-border bg-white overflow-hidden shadow-sm">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse text-[13px]">
-                            <thead>
-                                <tr className="bg-slate-50/50 border-b border-border">
-                                    <th className="px-4 py-3 font-bold text-muted-foreground w-24">ID</th>
-                                    <th className="px-4 py-3 font-bold text-muted-foreground w-40">분류</th>
-                                    <th className="px-4 py-3 font-bold text-muted-foreground">기능명</th>
-                                    <th className="px-4 py-3 font-bold text-muted-foreground w-28 text-center">상태</th>
-                                    <th className="px-4 py-3 font-bold text-muted-foreground w-24 text-center">차수</th>
-                                    <th className="px-4 py-3 font-bold text-muted-foreground w-24 text-center">중요도</th>
-                                    <th className="px-4 py-3 w-10"></th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border">
-                                {filteredSpecs.map((spec) => {
-                                    const { specCode, large, medium, description, scope, importance } = parseSpec(spec);
-                                    return (
-                                        <tr key={spec.id} onClick={() => onEdit(spec)} className="hover:bg-accent/50 transition-colors cursor-pointer group">
-                                            <td className="px-4 py-4 align-top font-mono text-xs text-muted-foreground font-semibold">
-                                                {specCode || '-'}
-                                            </td>
-                                            <td className="px-4 py-4 align-top">
-                                                <div className="flex flex-col gap-0.5">
-                                                    <span className="text-[11px] font-bold text-blue-600 inline-flex">{large}</span>
-                                                    <span className="text-xs text-muted-foreground font-medium truncate max-w-[140px]">{medium}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-4 align-top">
-                                                <div className="flex flex-col gap-1">
-                                                    <span className="font-bold text-foreground group-hover:text-primary transition-colors text-[14px]">{spec.title}</span>
-                                                    <p className="text-xs text-muted-foreground line-clamp-1 font-medium">{description}</p>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-4 align-top text-center">
-                                                <div
-                                                    onClick={(e) => handleStatusToggle(e, spec)}
-                                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary text-xs font-bold"
-                                                >
-                                                    {spec.status === 'done' ? (
-                                                        <><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> <span>완료</span></>
-                                                    ) : spec.status === 'in_progress' ? (
-                                                        <><CircleDashed className="w-3.5 h-3.5 text-blue-600 animate-spin" /> <span>진행중</span></>
-                                                    ) : (
-                                                        <><CircleDashed className="w-3.5 h-3.5 text-muted-foreground" /> <span>대기</span></>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-4 align-top text-center">
-                                                <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${scope === '1차' ? 'bg-blue-50 text-blue-700' : 'bg-orange-50 text-orange-700'}`}>
-                                                    {scope}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-4 align-top text-center text-xs font-black">
-                                                {importance === '상' ? <span className="text-destructive">상</span> : importance === '중' ? <span className="text-orange-500">중</span> : <span className="text-muted-foreground">하</span>}
-                                            </td>
-                                            <td className="px-4 py-4 text-right align-middle">
-                                                <MoreHorizontal className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                >
+                    <div className="rounded-md border border-border bg-white overflow-hidden shadow-sm">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse text-[13px]">
+                                <thead>
+                                    <tr className="bg-slate-50/50 border-b border-border">
+                                        <th className="px-4 py-3 font-bold text-muted-foreground w-12 text-center"></th>
+                                        <th className="px-4 py-3 font-bold text-muted-foreground w-24">ID</th>
+                                        <th className="px-4 py-3 font-bold text-muted-foreground w-40">분류</th>
+                                        <th className="px-4 py-3 font-bold text-muted-foreground">기능명</th>
+                                        <th className="px-4 py-3 font-bold text-muted-foreground w-28 text-center">상태</th>
+                                        <th className="px-4 py-3 font-bold text-muted-foreground w-24 text-center">차수</th>
+                                        <th className="px-4 py-3 font-bold text-muted-foreground w-24 text-center">중요도</th>
+                                        <th className="px-4 py-3 w-10"></th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-border">
+                                    <SortableContext
+                                        items={filteredSpecs.map(f => f.id)}
+                                        strategy={verticalListSortingStrategy}
+                                    >
+                                        {filteredSpecs.map((spec) => (
+                                            <SortableRow
+                                                key={spec.id}
+                                                spec={spec}
+                                                onEdit={onEdit}
+                                                parseSpec={parseSpec}
+                                                handleStatusToggle={handleStatusToggle}
+                                                loadSpecs={loadSpecs}
+                                            />
+                                        ))}
+                                    </SortableContext>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                </DndContext>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {Object.entries(groupedSpecs).map(([largeCat, mediums]: [string, any]) => (
