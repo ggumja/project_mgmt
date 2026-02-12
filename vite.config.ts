@@ -4,6 +4,7 @@ import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/project_mgmt/',
   plugins: [react()],
   resolve: {
     alias: {
