@@ -1,5 +1,5 @@
 export type Priority = 'critical' | 'high' | 'medium' | 'low';
-export type Status = 'draft' | 'review' | 'approved';
+export type Status = 'todo' | 'in_progress' | 'done';
 export type Category = 'product' | 'order' | 'member' | 'B2B_special' | 'settlement';
 export type DevScope = '1차' | '2차' | '추가논의';
 

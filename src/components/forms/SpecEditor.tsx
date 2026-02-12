@@ -81,7 +81,7 @@ export function SpecEditor({ projectId, initialData, onSave, onCancel }: SpecEdi
     const [notes, setNotes] = useState(initialParsed.notes)
 
     const [priority, setPriority] = useState<Priority>(initialData?.priority || 'medium')
-    const [status, setStatus] = useState<Status>(initialData?.status || 'draft')
+    const [status, setStatus] = useState<Status>(initialData?.status || 'todo')
     const [version, setVersion] = useState(initialData?.version || '1.0')
     const [content, setContent] = useState(initialData?.content || '# 새로운 기능 정의\n\n상세한 기능 정의와 작업 내용을 Markdown 형식으로 자유롭게 기록하세요.')
 
@@ -103,7 +103,7 @@ export function SpecEditor({ projectId, initialData, onSave, onCancel }: SpecEdi
         setImportance(parsed.importance);
         setNotes(parsed.notes);
         setPriority(initialData?.priority || 'medium');
-        setStatus(initialData?.status || 'draft');
+        setStatus(initialData?.status || 'todo');
         setVersion(initialData?.version || '1.0');
         setContent(initialData?.content || (initialData?.id ? '' : '# 새로운 기능 정의\n\n상세한 기능 정의와 작업 내용을 Markdown 형식으로 자유롭게 기록하세요.'));
     }, [initialData]);
