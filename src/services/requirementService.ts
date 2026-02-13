@@ -72,5 +72,20 @@ export const requirementService = {
         }
 
         return data as Requirement
+    },
+
+    /**
+     * 요구사항을 삭제합니다.
+     */
+    async deleteRequirement(requirementId: string): Promise<void> {
+        const { error } = await supabase
+            .from('requirements')
+            .delete()
+            .eq('id', requirementId)
+
+        if (error) {
+            console.error('Error deleting requirement:', error)
+            throw error
+        }
     }
 }
