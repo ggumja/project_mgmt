@@ -8,7 +8,7 @@ export const requirementService = {
     async getRequirementsByProject(projectId: string): Promise<Requirement[]> {
         const { data, error } = await supabase
             .from('requirements')
-            .select('*')
+            .select('*, author:created_by(name)')
             .eq('project_id', projectId)
             .order('req_code', { ascending: true })
 
@@ -17,7 +17,10 @@ export const requirementService = {
             throw error
         }
 
-        return data as Requirement[]
+        return data.map((item: any) => ({
+            ...item,
+            author_name: item.author?.name
+        })) as Requirement[]
     },
 
     /**

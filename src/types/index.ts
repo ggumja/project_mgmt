@@ -48,6 +48,11 @@ export interface Requirement {
     version: string;
     created_at: string;
     updated_at: string;
+    created_by?: string;
+    author_name?: string;
+    reviewer_id?: string;
+    reviewed_at?: string;
+    rejection_reason?: string;
 }
 
 export interface SpecHistory {

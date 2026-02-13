@@ -15,9 +15,13 @@ import {
     X,
     Edit2,
     Save,
-    Trash2
+    Trash2,
+    User,       // Added
+    ListFilter, // Added
+    CheckSquare // Added
 } from 'lucide-react'
 import { userService } from '@/services/userService'
+import { SpecMapper } from '@/components/common/SpecMapper'
 
 interface RequirementTableProps {
     projectId: string;
@@ -28,6 +32,7 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
     const [specs, setSpecs] = useState<FunctionalSpec[]>([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
+    const [activeTab, setActiveTab] = useState<'all' | 'mine' | 'review'>('all') // Added Tab State
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -39,9 +44,13 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
         priority: 'must',
         status: 'draft',
         req_type: 'functional',
-        project_id: projectId
+        project_id: projectId,
+        functional_spec_id: undefined
     })
     const [isSaving, setIsSaving] = useState(false)
+
+    // Spec Mapper State
+    const [isMapperOpen, setIsMapperOpen] = useState(false)
 
     // User Role Check
     const [user, setUser] = useState<any>(null);
@@ -72,27 +81,29 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
         }
     }, [projectId])
 
-    const handleMappingChange = async (reqId: string, specId: string | null) => {
-        if (isViewer) return;
-        try {
-            const updated = await requirementService.updateMapping(reqId, specId)
-            setRequirements(prev => prev.map(r => r.id === reqId ? updated : r))
-        } catch (err) {
-            alert('매핑 업데이트 중 오류가 발생했습니다.')
-        }
-    }
-
     const handleAddNew = () => {
+        // Auto-generate next REQ code
+        const codes = requirements
+            .map(r => r.req_code)
+            .filter(code => code.startsWith('RQ-'))
+            .map(code => parseInt(code.replace('RQ-', ''), 10))
+            .filter(num => !isNaN(num))
+
+        const nextNum = codes.length > 0 ? Math.max(...codes) + 1 : 1
+        const nextCode = `RQ-${String(nextNum).padStart(5, '0')}`
+
         setEditingReq(null)
         setFormData({
             project_id: projectId,
-            req_code: '',
+            req_code: nextCode,
             title: '',
             description: '',
             priority: 'must',
             status: 'draft',
             req_type: 'functional',
-            version: '1.0'
+            version: '1.0',
+            functional_spec_id: undefined,
+            created_by: user?.id
         })
         setIsModalOpen(true)
     }
@@ -109,7 +120,25 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
 
         try {
             setIsSaving(true)
-            const saved = await requirementService.upsertRequirement(formData)
+
+            // Prepare data with reviewer info if status changed to approved/rejected
+            const dataToSave = { ...formData }
+
+            if (['approved', 'rejected'].includes(formData.status || '')) {
+                // If status changed or implementation requires updating reviewer
+                if (editingReq?.status !== formData.status) {
+                    dataToSave.reviewer_id = user?.id
+                    dataToSave.reviewed_at = new Date().toISOString()
+                }
+            } else if (['draft', 'review'].includes(formData.status || '')) {
+                // Reset reviewer info if moved back to draft/review
+                // We cast to any to allow null for clearing DB field
+                (dataToSave as any).reviewer_id = null;
+                (dataToSave as any).reviewed_at = null;
+                (dataToSave as any).rejection_reason = null;
+            }
+
+            const saved = await requirementService.upsertRequirement(dataToSave)
 
             if (editingReq) {
                 setRequirements(prev => prev.map(r => r.id === saved.id ? saved : r))
@@ -125,10 +154,20 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
         }
     }
 
-    const filteredRequirements = requirements.filter(req =>
-        req.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        req.req_code.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    const filteredRequirements = requirements.filter(req => {
+        // Search Filter
+        const matchesSearch = req.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            req.req_code.toLowerCase().includes(searchTerm.toLowerCase())
+
+        // Tab Filter
+        if (activeTab === 'mine') {
+            return matchesSearch && req.created_by === user?.id
+        }
+        if (activeTab === 'review') {
+            return matchesSearch && req.status === 'review'
+        }
+        return matchesSearch
+    })
 
     if (loading) {
         return (
@@ -141,6 +180,42 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
 
     return (
         <div className="space-y-4">
+            {/* Tabs */}
+            <div className="flex items-center gap-1 p-1 bg-slate-100/50 rounded-xl mx-2 mb-2">
+                <button
+                    onClick={() => setActiveTab('all')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all ${activeTab === 'all'
+                        ? 'bg-white text-slate-700 shadow-sm ring-1 ring-slate-900/5'
+                        : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+                >
+                    <ListFilter className="w-4 h-4" />
+                    전체 목록
+                </button>
+                <button
+                    onClick={() => setActiveTab('mine')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all ${activeTab === 'mine'
+                        ? 'bg-white text-blue-600 shadow-sm ring-1 ring-slate-900/5'
+                        : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+                >
+                    <User className="w-4 h-4" />
+                    내 요구사항
+                </button>
+                <button
+                    onClick={() => setActiveTab('review')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all ${activeTab === 'review'
+                        ? 'bg-white text-orange-600 shadow-sm ring-1 ring-slate-900/5'
+                        : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+                >
+                    <CheckSquare className="w-4 h-4" />
+                    검토 대기
+                    {requirements.filter(r => r.status === 'review').length > 0 && (
+                        <span className="bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded text-[10px]">
+                            {requirements.filter(r => r.status === 'review').length}
+                        </span>
+                    )}
+                </button>
+            </div>
+
             <div className="flex items-center gap-2 p-2">
                 <div className="relative flex-1">
                     <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -171,77 +246,78 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
                             <th className="px-5 py-4 font-bold text-slate-600 uppercase tracking-widest text-xs">요구사항명</th>
                             <th className="px-5 py-4 font-bold text-slate-600 w-24 text-center uppercase tracking-widest text-xs">우선순위</th>
                             <th className="px-5 py-4 font-bold text-slate-600 w-28 text-center uppercase tracking-widest text-xs">상태</th>
+                            <th className="px-5 py-4 font-bold text-slate-600 w-24 text-center uppercase tracking-widest text-xs">작성자</th>
                             <th className="px-5 py-4 font-bold text-slate-600 w-48 uppercase tracking-widest text-xs">연결된 기능</th>
                             <th className="px-5 py-2 w-20 text-center uppercase tracking-widest text-xs">관리</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
-                        {filteredRequirements.map((req) => (
-                            <tr key={req.id} className="hover:bg-slate-50 transition-colors group">
-                                <td className="px-5 py-5 align-top font-mono text-[13px] text-blue-600 font-black">
-                                    {req.req_code}
-                                </td>
-                                <td className="px-5 py-5 align-top">
-                                    <div className="font-bold text-slate-900 text-[15px]">{req.title}</div>
-                                    <div className="text-sm text-slate-500 mt-1 line-clamp-2 leading-relaxed">{req.description}</div>
-                                </td>
-                                <td className="px-5 py-5 align-top text-center">
-                                    <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-black tracking-tighter ${req.priority === 'must' ? 'bg-red-50 text-red-600' :
-                                        req.priority === 'should' ? 'bg-orange-50 text-orange-600' :
-                                            'bg-slate-100 text-slate-500'
-                                        }`}>
-                                        {req.priority.toUpperCase()}
-                                    </span>
-                                </td>
-                                <td className="px-5 py-5 align-top text-center">
-                                    <div className="inline-flex items-center gap-2 text-xs font-bold text-slate-600">
-                                        {req.status === 'implemented' ? (
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                        ) : req.status === 'approved' ? (
-                                            <Clock className="w-4 h-4 text-blue-600" />
+                        {filteredRequirements.map((req) => {
+                            const connectedSpec = specs.find(s => s.id === req.functional_spec_id)
+                            return (
+                                <tr key={req.id} className="hover:bg-slate-50 transition-colors group">
+                                    <td className="px-5 py-5 align-top font-mono text-[13px] text-blue-600 font-black">
+                                        {req.req_code}
+                                    </td>
+                                    <td className="px-5 py-5 align-top">
+                                        <div className="font-bold text-slate-900 text-[15px]">{req.title}</div>
+                                        <div className="text-sm text-slate-500 mt-1 line-clamp-2 leading-relaxed">{req.description}</div>
+                                    </td>
+                                    <td className="px-5 py-5 align-top text-center">
+                                        <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-black tracking-tighter ${req.priority === 'must' ? 'bg-red-50 text-red-600' :
+                                            req.priority === 'should' ? 'bg-orange-50 text-orange-600' :
+                                                'bg-slate-100 text-slate-500'
+                                            }`}>
+                                            {req.priority.toUpperCase()}
+                                        </span>
+                                    </td>
+                                    <td className="px-5 py-5 align-top text-center">
+                                        <div className="inline-flex items-center gap-2 text-xs font-bold text-slate-600">
+                                            {req.status === 'implemented' ? (
+                                                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                            ) : req.status === 'approved' ? (
+                                                <Clock className="w-4 h-4 text-blue-600" />
+                                            ) : (
+                                                <AlertTriangle className="w-4 h-4 text-slate-300" />
+                                            )}
+                                            <span className="capitalize">{req.status}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-5 py-5 align-top text-center">
+                                        <div className="text-xs font-medium text-slate-600">
+                                            {req.author_name || '-'}
+                                        </div>
+                                    </td>
+                                    <td className="px-5 py-5 align-top">
+                                        {connectedSpec ? (
+                                            <div className="flex flex-col gap-1">
+                                                <div className="text-xs font-bold text-slate-700">{connectedSpec.title}</div>
+                                                <div className="text-[10px] text-slate-400">
+                                                    {connectedSpec.spec_code && <span className="font-mono mr-1">{connectedSpec.spec_code}</span>}
+                                                    {connectedSpec.large_category && <span>{connectedSpec.large_category} &gt; </span>}
+                                                    {connectedSpec.medium_category}
+                                                </div>
+                                            </div>
                                         ) : (
-                                            <AlertTriangle className="w-4 h-4 text-slate-300" />
+                                            <span className="text-xs text-slate-400">미지정</span>
                                         )}
-                                        <span className="capitalize">{req.status}</span>
-                                    </div>
-                                </td>
-                                <td className="px-5 py-5 align-top">
-                                    <select
-                                        value={req.functional_spec_id || ''}
-                                        disabled={isViewer}
-                                        onChange={(e) => handleMappingChange(req.id, e.target.value || null)}
-                                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:border-blue-600 outline-none hover:bg-white transition-all cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <option value="">미지정 (UNMAPPED)</option>
-                                        {specs.map(spec => (
-                                            <option key={spec.id} value={spec.id}>{spec.title}</option>
-                                        ))}
-                                    </select>
-                                </td>
-                                <td className="px-5 py-5 text-center align-middle">
-                                    <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        {!isViewer && (
-                                            <button
-                                                onClick={() => handleEdit(req)}
-                                                className="p-2 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-colors"
-                                                title="수정"
-                                            >
-                                                <Edit2 className="w-4 h-4" />
-                                            </button>
-                                        )}
-                                        {req.functional_spec_id && !isViewer && (
-                                            <button
-                                                onClick={() => handleMappingChange(req.id, null)}
-                                                className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
-                                                title="연결 해제"
-                                            >
-                                                <Unlink className="w-4 h-4" />
-                                            </button>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
+                                    </td>
+                                    <td className="px-5 py-5 text-center align-middle">
+                                        <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            {!isViewer && (
+                                                <button
+                                                    onClick={() => handleEdit(req)}
+                                                    className="p-2 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-colors"
+                                                    title="수정"
+                                                >
+                                                    <Edit2 className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            )
+                        })}
                     </tbody>
                 </table>
             </div>
@@ -281,7 +357,7 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSave} className="p-8 space-y-6">
+                        <form onSubmit={handleSave} className="p-8 space-y-6 max-h-[75vh] overflow-y-auto">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">코드 (ID)</label>
@@ -291,7 +367,7 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
                                         value={formData.req_code}
                                         onChange={e => setFormData({ ...formData, req_code: e.target.value })}
                                         className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition-all font-mono font-bold text-slate-700"
-                                        placeholder="REQ-001"
+                                        placeholder="RQ-00001"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -324,9 +400,56 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
                                 <textarea
                                     value={formData.description}
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full h-40 p-4 bg-white border border-slate-200 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition-all font-medium text-slate-600 resize-none leading-relaxed"
+                                    className="w-full h-32 p-4 bg-white border border-slate-200 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition-all font-medium text-slate-600 resize-none leading-relaxed"
                                     placeholder="요구사항에 대한 상세 설명과 인수 조건을 기술하세요."
                                 />
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">기능 연결 (Function Mapping)</label>
+                                {formData.functional_spec_id ? (
+                                    <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                                        <div>
+                                            {(() => {
+                                                const spec = specs.find(s => s.id === formData.functional_spec_id);
+                                                return spec ? (
+                                                    <>
+                                                        <div className="font-bold text-blue-900 text-sm">{spec.title}</div>
+                                                        <div className="text-xs text-blue-600 mt-1 flex gap-2">
+                                                            {spec.spec_code && <span className="font-mono bg-white/50 px-1 rounded">{spec.spec_code}</span>}
+                                                            {spec.large_category && <span>{spec.large_category} &gt; {spec.medium_category}</span>}
+                                                        </div>
+                                                    </>
+                                                ) : <span className="text-sm text-slate-500">알 수 없는 기능</span>
+                                            })()}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsMapperOpen(true)}
+                                                className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors text-xs font-bold"
+                                            >
+                                                변경
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, functional_spec_id: undefined })}
+                                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                            >
+                                                <Unlink className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsMapperOpen(true)}
+                                        className="w-full p-4 border-2 border-dashed border-slate-200 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 transition-all flex items-center justify-center gap-2 text-slate-500 font-bold text-sm group"
+                                    >
+                                        <LinkIcon className="w-4 h-4 group-hover:text-blue-500" />
+                                        <span>구현될 기능 연결하기</span>
+                                    </button>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-2 gap-6">
@@ -358,6 +481,23 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
                                     </select>
                                 </div>
                             </div>
+
+                            {/* Rejection Reason Field - Only show when status is rejected */}
+                            {formData.status === 'rejected' && (
+                                <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200 bg-red-50 p-4 rounded-xl border border-red-100">
+                                    <label className="text-xs font-bold text-red-600 uppercase tracking-wider ml-1 flex items-center gap-1">
+                                        <AlertTriangle className="w-3 h-3" />
+                                        반려 사유 (Rejection Reason)
+                                    </label>
+                                    <textarea
+                                        value={formData.rejection_reason || ''}
+                                        onChange={e => setFormData({ ...formData, rejection_reason: e.target.value })}
+                                        className="w-full h-24 p-3 bg-white border border-red-200 rounded-lg focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all text-sm text-slate-700 resize-none"
+                                        placeholder="반려 사유를 상세히 입력해주세요. 작성자가 이를 확인하고 수정할 것입니다."
+                                        required
+                                    />
+                                </div>
+                            )}
 
                             <div className="pt-4 flex items-center justify-between border-t border-slate-100">
                                 {editingReq ? (
@@ -409,6 +549,19 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
                         </form>
                     </div>
                 </div>
+            )}
+
+            {/* Spec Mapper Modal */}
+            {isMapperOpen && (
+                <SpecMapper
+                    specs={specs}
+                    selectedSpecId={formData.functional_spec_id}
+                    onSelect={(specId) => {
+                        setFormData({ ...formData, functional_spec_id: specId });
+                        setIsMapperOpen(false);
+                    }}
+                    onClose={() => setIsMapperOpen(false)}
+                />
             )}
         </div>
     )

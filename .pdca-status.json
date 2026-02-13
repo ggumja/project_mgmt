@@ -31,7 +31,19 @@
             "start_date": "2026-02-11T14:45:00+09:00",
             "status": "COMPLETED",
             "feature": "상세 설명(Description) 필드 추출 및 모든 뷰(Table/Hierarchical/Card) 적용 완료"
+        },
+        {
+            "phase": "PLAN",
+            "start_date": "2026-02-13T13:58:00+09:00",
+            "status": "COMPLETED",
+            "feature": "Requirement Approval Workflow (승인/반려 시스템) 기획"
+        },
+        {
+            "phase": "DO",
+            "start_date": "2026-02-13T15:40:00+09:00",
+            "status": "COMPLETED",
+            "feature": "Requirement Approval Workflow (승인/반려 시스템) UI 구현 및 로직 적용"
         }
     ],
-    "last_updated": "2026-02-11T14:45:00+09:00"
+    "last_updated": "2026-02-13T15:40:00+09:00"
 }
