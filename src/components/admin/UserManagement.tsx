@@ -36,17 +36,25 @@ export function UserManagement() {
         loadData();
     }, []);
 
-    const loadData = () => {
-        setUsers(userService.getUsers());
-        setLogs(userService.getHistory());
+    const loadData = async () => {
+        try {
+            const [fetchedUsers, fetchedLogs] = await Promise.all([
+                userService.getUsers(),
+                userService.getHistory()
+            ]);
+            setUsers(fetchedUsers);
+            setLogs(fetchedLogs);
+        } catch (error) {
+            console.error('Failed to load data:', error);
+        }
     };
 
-    const handleSaveUser = (e: React.FormEvent) => {
+    const handleSaveUser = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             if (editingUser) {
                 // Update existing user
-                userService.updateUser({
+                await userService.updateUser({
                     ...editingUser,
                     ...formData,
                     // Only update password if provided
@@ -55,7 +63,7 @@ export function UserManagement() {
                 });
             } else {
                 // Create new user
-                userService.addUser({
+                await userService.addUser({
                     ...formData,
                     status: 'active'
                 });
@@ -93,10 +101,10 @@ export function UserManagement() {
         });
     };
 
-    const handleDeleteUser = (id: string) => {
+    const handleDeleteUser = async (id: string) => {
         if (confirm('Are you sure you want to delete this user?')) {
             try {
-                userService.deleteUser(id);
+                await userService.deleteUser(id);
                 loadData();
             } catch (err: any) {
                 alert(err.message);

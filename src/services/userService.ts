@@ -1,47 +1,43 @@
+import { supabase } from '@/lib/supabase';
 import { User, UserActivity } from '@/types/user';
-
-const STORAGE_KEY_USERS = 'jeisys_users';
-const STORAGE_KEY_LOGS = 'jeisys_user_logs';
-const STORAGE_KEY_SESSION = 'jeisys_session';
-
-// Initial admin user
-const INITIAL_ADMIN: User = {
-    id: '00000000-0000-0000-0000-000000000001',
-    username: 'admin',
-    password: 'password123', // In a real app, this would be hashed
-    name: 'Jeisys Admin',
-    role: 'admin',
-    department: 'IT Team',
-    email: 'admin@jeisys.com',
-    status: 'active',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-};
 
 export const userService = {
     // --- Auth ---
     getCurrentUser: (): User | null => {
-        const session = localStorage.getItem(STORAGE_KEY_SESSION);
+        // Session management is still done via localStorage for simplicity in this demo,
+        // but can be upgraded to Supabase Auth.
+        // For now, we trust the local storage session which is set after login.
+        const session = localStorage.getItem('jeisys_session');
         return session ? JSON.parse(session) : null;
     },
 
     login: async (username: string, password: string): Promise<User | null> => {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Simulate API delay needed? Not really with Supabase call.
 
-        const users = userService.getUsers();
-        const user = users.find(u => u.username === username && u.password === password);
+        const { data, error } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('username', username)
+            .eq('password', password) // In production, never query password directly. Use Supabase Auth or hash comparison.
+            .single();
 
-        if (user && user.status === 'active') {
+        if (error || !data) {
+            console.error('Login failed:', error);
+            return null;
+        }
+
+        const user = data as User;
+
+        if (user.status === 'active') {
             // Update last login
             const updatedUser = { ...user, last_login: new Date().toISOString() };
-            userService.updateUser(updatedUser);
+            await userService.updateUser(updatedUser);
 
             // Set session
-            localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(updatedUser));
+            localStorage.setItem('jeisys_session', JSON.stringify(updatedUser));
 
             // Log activity
-            userService.logActivity({
+            await userService.logActivity({
                 user_id: user.id,
                 user_name: user.name,
                 action: 'LOGIN',
@@ -54,10 +50,10 @@ export const userService = {
         return null;
     },
 
-    logout: () => {
+    logout: async () => {
         const user = userService.getCurrentUser();
         if (user) {
-            userService.logActivity({
+            await userService.logActivity({
                 user_id: user.id,
                 user_name: user.name,
                 action: 'LOGOUT',
@@ -65,74 +61,94 @@ export const userService = {
                 details: 'User logged out'
             });
         }
-        localStorage.removeItem(STORAGE_KEY_SESSION);
+        localStorage.removeItem('jeisys_session');
     },
 
     // --- User Management ---
-    getUsers: (): User[] => {
-        const stored = localStorage.getItem(STORAGE_KEY_USERS);
-        if (!stored) {
-            // Initialize with default admin if empty
-            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify([INITIAL_ADMIN]));
-            return [INITIAL_ADMIN];
+    getUsers: async (): Promise<User[]> => {
+        const { data, error } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching users:', error);
+            throw error;
         }
-        return JSON.parse(stored);
+        return data as User[];
     },
 
-    addUser: (user: Omit<User, 'id' | 'created_at' | 'updated_at'>): User => {
-        const users = userService.getUsers();
-        if (users.some(u => u.username === user.username)) {
+    addUser: async (user: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<User> => {
+        // Check if username exists
+        const { data: existing } = await supabase
+            .from('user_profiles')
+            .select('id')
+            .eq('username', user.username)
+            .single();
+
+        if (existing) {
             throw new Error('Username already exists');
         }
 
-        const newUser: User = {
+        const newUser = {
             ...user,
-            id: crypto.randomUUID(),
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
         };
 
-        users.push(newUser);
-        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+        const { data, error } = await supabase
+            .from('user_profiles')
+            .insert(newUser)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Error creating user:', error);
+            throw error;
+        }
 
         // Log creation
         const currentUser = userService.getCurrentUser();
         if (currentUser) {
-            userService.logActivity({
+            await userService.logActivity({
                 user_id: currentUser.id,
                 user_name: currentUser.name,
                 action: 'create',
-                target: `User: ${newUser.username}`,
-                details: `Created new user ${newUser.name} with role ${newUser.role}`
+                target: `User: ${data.username}`,
+                details: `Created new user ${data.name} with role ${data.role}`
             });
         }
 
-        return newUser;
+        return data as User;
     },
 
-    updateUser: (user: User): User => {
-        const users = userService.getUsers();
-        const index = users.findIndex(u => u.id === user.id);
-
-        if (index === -1) throw new Error('User not found');
-
+    updateUser: async (user: User): Promise<User> => {
         const updatedUser = {
             ...user,
             updated_at: new Date().toISOString()
         };
 
-        users[index] = updatedUser;
-        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+        const { data, error } = await supabase
+            .from('user_profiles')
+            .update(updatedUser)
+            .eq('id', user.id)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Error updating user:', error);
+            throw error;
+        }
 
         // Update session if self-update
         const currentUser = userService.getCurrentUser();
         if (currentUser && currentUser.id === user.id) {
-            localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(updatedUser));
+            localStorage.setItem('jeisys_session', JSON.stringify(data));
         }
 
-        // Log update (skip login update logging to reduce noise if needed, but logging everything for audit is better)
-        if (currentUser && currentUser.id !== user.id) { // Only log if admin updates another user
-            userService.logActivity({
+        // Log update
+        if (currentUser && currentUser.id !== user.id) {
+            await userService.logActivity({
                 user_id: currentUser.id,
                 user_name: currentUser.name,
                 action: 'update',
@@ -141,24 +157,34 @@ export const userService = {
             });
         }
 
-        return updatedUser;
+        return data as User;
     },
 
-    deleteUser: (id: string) => {
-        const users = userService.getUsers();
-        const userToDelete = users.find(u => u.id === id);
+    deleteUser: async (id: string): Promise<void> => {
+        // Check if admin
+        const { data: userToDelete } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('id', id)
+            .single();
 
-        // Prevent deleting the last admin or self (optional check, but good for safety)
         if (userToDelete?.username === 'admin') {
             throw new Error('Cannot delete system admin');
         }
 
-        const newUsers = users.filter(u => u.id !== id);
-        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(newUsers));
+        const { error } = await supabase
+            .from('user_profiles')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error('Error deleting user:', error);
+            throw error;
+        }
 
         const currentUser = userService.getCurrentUser();
         if (currentUser) {
-            userService.logActivity({
+            await userService.logActivity({
                 user_id: currentUser.id,
                 user_name: currentUser.name,
                 action: 'delete',
@@ -169,20 +195,32 @@ export const userService = {
     },
 
     // --- History / Audit Logs ---
-    getHistory: (): UserActivity[] => {
-        const stored = localStorage.getItem(STORAGE_KEY_LOGS);
-        return stored ? JSON.parse(stored) : [];
+    getHistory: async (): Promise<UserActivity[]> => {
+        const { data, error } = await supabase
+            .from('user_activity_logs')
+            .select('*')
+            .order('timestamp', { ascending: false })
+            .limit(100); // Limit to last 100 logs
+
+        if (error) {
+            console.error('Error fetching logs:', error);
+            return [];
+        }
+        return data as UserActivity[];
     },
 
-    logActivity: (activity: Omit<UserActivity, 'id' | 'timestamp'>) => {
-        const logs = userService.getHistory();
-        const newLog: UserActivity = {
+    logActivity: async (activity: Omit<UserActivity, 'id' | 'timestamp'>) => {
+        const newLog = {
             ...activity,
-            id: crypto.randomUUID(),
             timestamp: new Date().toISOString(),
         };
-        // Keep logs size manageable? For now, unlimited.
-        logs.unshift(newLog); // Prepend for latest first
-        localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
+
+        const { error } = await supabase
+            .from('user_activity_logs')
+            .insert(newLog);
+
+        if (error) {
+            console.error('Error logging activity:', error);
+        }
     }
 };
