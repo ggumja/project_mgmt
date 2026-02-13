@@ -48,6 +48,7 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
         functional_spec_id: undefined
     })
     const [isSaving, setIsSaving] = useState(false)
+    const [saveError, setSaveError] = useState<string | null>(null) // Added Error State
 
     // Spec Mapper State
     const [isMapperOpen, setIsMapperOpen] = useState(false)
@@ -118,6 +119,8 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
         e.preventDefault()
         if (isViewer) return;
 
+        setSaveError(null) // Clear previous errors
+
         try {
             setIsSaving(true)
 
@@ -146,9 +149,10 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
                 setRequirements(prev => [...prev, saved])
             }
             setIsModalOpen(false)
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to save requirement:', err)
-            alert('저장 중 오류가 발생했습니다.')
+            // Show meaningful error to user
+            setSaveError(err.message || '저장 중 알 수 없는 오류가 발생했습니다.')
         } finally {
             setIsSaving(false)
         }
@@ -260,7 +264,12 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
                                         {req.req_code}
                                     </td>
                                     <td className="px-5 py-5 align-top">
-                                        <div className="font-bold text-slate-900 text-[15px]">{req.title}</div>
+                                        <div
+                                            onClick={() => !isViewer && handleEdit(req)}
+                                            className={`font-bold text-slate-900 text-[15px] transition-colors ${!isViewer ? 'cursor-pointer hover:text-blue-600 hover:underline' : ''}`}
+                                        >
+                                            {req.title}
+                                        </div>
                                         <div className="text-sm text-slate-500 mt-1 line-clamp-2 leading-relaxed">{req.description}</div>
                                     </td>
                                     <td className="px-5 py-5 align-top text-center">
@@ -358,6 +367,14 @@ export function RequirementTable({ projectId }: RequirementTableProps) {
                         </div>
 
                         <form onSubmit={handleSave} className="p-8 space-y-6 max-h-[75vh] overflow-y-auto">
+                            {/* Error Display */}
+                            {saveError && (
+                                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+                                    <AlertTriangle className="w-4 h-4" />
+                                    {saveError}
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">코드 (ID)</label>

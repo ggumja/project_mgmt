@@ -27,10 +27,13 @@ export const requirementService = {
      * 요구사항을 생성하거나 업데이트합니다.
      */
     async upsertRequirement(requirement: Partial<Requirement>): Promise<Requirement> {
+        // Remove virtual fields that are not in the DB table
+        const { author_name, author, ...dbData } = requirement as any
+
         const { data, error } = await supabase
             .from('requirements')
-            .upsert(requirement)
-            .select()
+            .upsert(dbData)
+            .select('*, author:created_by(name)') // Fetch author info for UI consistency
             .single()
 
         if (error) {
@@ -38,7 +41,11 @@ export const requirementService = {
             throw error
         }
 
-        return data as Requirement
+        const result = data as any
+        return {
+            ...result,
+            author_name: result.author?.name
+        } as Requirement
     },
 
     /**
