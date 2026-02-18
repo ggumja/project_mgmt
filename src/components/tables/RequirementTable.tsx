@@ -3,23 +3,21 @@ import { useEffect, useState } from 'react'
 import { requirementService } from '@/services/requirementService'
 import { specService } from '@/services/specService'
 import { Requirement, FunctionalSpec } from '@/types'
-import {
-    Search,
-    Link as LinkIcon,
-    Unlink,
-    CheckCircle2,
-    Clock,
-    AlertTriangle,
-    Loader2,
-    Plus,
-    X,
-    Edit2,
-    Save,
-    Trash2,
-    User,       // Added
-    ListFilter, // Added
-    CheckSquare // Added
-} from 'lucide-react'
+import Search from 'lucide-react/dist/esm/icons/search'
+import LinkIcon from 'lucide-react/dist/esm/icons/link'
+import Unlink from 'lucide-react/dist/esm/icons/unlink'
+import CheckCircle2 from 'lucide-react/dist/esm/icons/check-circle-2'
+import Clock from 'lucide-react/dist/esm/icons/clock'
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
+import Loader2 from 'lucide-react/dist/esm/icons/loader-2'
+import Plus from 'lucide-react/dist/esm/icons/plus'
+import X from 'lucide-react/dist/esm/icons/x'
+import Edit2 from 'lucide-react/dist/esm/icons/edit-2'
+import Save from 'lucide-react/dist/esm/icons/save'
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2'
+import User from 'lucide-react/dist/esm/icons/user'
+import ListFilter from 'lucide-react/dist/esm/icons/list-filter'
+import CheckSquare from 'lucide-react/dist/esm/icons/check-square'
 import { userService } from '@/services/userService'
 import { SpecMapper } from '@/components/common/SpecMapper'
 

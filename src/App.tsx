@@ -8,14 +8,12 @@ import { UserManagement } from '@/components/admin/UserManagement'
 import { userService } from '@/services/userService'
 import { FunctionalSpec } from '@/types'
 import { User as UserType } from '@/types/user'
-import {
-    LayoutDashboard,
-    Settings,
-    LogOut,
-    ChevronLeft,
-    ClipboardList,
-    User
-} from 'lucide-react'
+import LayoutDashboard from 'lucide-react/dist/esm/icons/layout-dashboard'
+import Settings from 'lucide-react/dist/esm/icons/settings'
+import LogOut from 'lucide-react/dist/esm/icons/log-out'
+import ChevronLeft from 'lucide-react/dist/esm/icons/chevron-left'
+import ClipboardList from 'lucide-react/dist/esm/icons/clipboard-list'
+import User from 'lucide-react/dist/esm/icons/user'
 
 function App() {
     const [currentProjectId] = useState('00000000-0000-0000-0000-000000000002')
