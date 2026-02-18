@@ -81,7 +81,7 @@ function App() {
                     </div>
                     <button
                         onClick={() => setView('list')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 ${view === 'list' && !selectedSpec ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors duration-200 ${view === 'list' && !selectedSpec ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
                     >
                         <LayoutDashboard className="w-5 h-5" />
                         <span>기능 정의서</span>
@@ -91,7 +91,7 @@ function App() {
                             setView('requirements')
                             setSelectedSpec(undefined)
                         }}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 ${view === 'requirements' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors duration-200 ${view === 'requirements' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
                     >
                         <ClipboardList className="w-5 h-5" />
                         <span>요구사항추적</span>
@@ -107,7 +107,7 @@ function App() {
                                     setView('admin')
                                     setSelectedSpec(undefined)
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 ${view === 'admin' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors duration-200 ${view === 'admin' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
                             >
                                 <Settings className="w-5 h-5" />
                                 <span>시스템 설정</span>
@@ -119,7 +119,7 @@ function App() {
                 <div className="p-6 border-t border-border bg-slate-50/50">
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-3 w-full text-sm font-bold text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                        className="flex items-center gap-3 px-4 py-3 w-full text-sm font-bold text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
                     >
                         <LogOut className="w-5 h-5" />
                         <span>로그아웃</span>
@@ -146,7 +146,7 @@ function App() {
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-lg transition-all cursor-pointer border border-border/50">
+                        <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-border/50">
                             <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-sm font-bold text-xs">
                                 {user.name.charAt(0)}
                             </div>
